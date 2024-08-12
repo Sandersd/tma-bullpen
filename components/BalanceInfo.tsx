@@ -1,3 +1,5 @@
+"use client";
+
 export default function BalanceInfo() {
   return (
     <section className="p-4">
