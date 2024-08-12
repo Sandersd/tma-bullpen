@@ -36,7 +36,9 @@ const crosshairLinePlugin: Plugin<'line'> = {
     if (tooltip && tooltip.getActiveElements().length > 0) {
       const x = tooltip.getActiveElements()[0].element.x;
 
-      WebApp.HapticFeedback.impactOccurred('light');
+      if (typeof window !== 'undefined') {
+        WebApp.HapticFeedback.impactOccurred('light');
+      }
 
       ctx.save();
       ctx.beginPath();
