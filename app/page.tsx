@@ -6,11 +6,15 @@ import WebApp from '@twa-dev/sdk'
 
 export default function Home() {
   useEffect(() => {
-    WebApp.ready();
+    if (typeof window !== 'undefined') {
+      WebApp.ready();
+    }
   }, []);
 
   const closeApp = () => {
-    WebApp.close();
+    if (typeof window !== 'undefined') {
+      WebApp.close();
+    }
   };
 
   return (
