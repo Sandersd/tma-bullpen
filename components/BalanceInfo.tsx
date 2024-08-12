@@ -15,7 +15,7 @@ export default function BalanceInfo() {
         <h3 className="text-lg">About</h3>
         <p>Popular meme Dogwifhat vibes wif frens onchain @Dogwifcoin on X</p>
       </div>
-      <div className="mt-4 flex justify-between">
+      <div className="mt-4 mb-[60px] flex justify-between">
         <div>
           <p>Market cap</p>
           <p>$1.7B</p>
