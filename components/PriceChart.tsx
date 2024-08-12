@@ -10,7 +10,6 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
-// Register the components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -23,13 +22,23 @@ ChartJS.register(
 
 export default function PriceChart() {
   const data = {
-    labels: ["1D", "4H", "LIVE"],
+    labels: ["MAX", "3M", "1M", "1W", "1D", "4H", "LIVE"],
     datasets: [
       {
         label: "Price",
-        data: [1.7, 1.8, 1.74],
+        data: [
+          1.5, 
+          1.7, 
+          1.8, 
+          1.6, 
+          1.74, 
+          1.8, 
+          1.85, 
+        ],
         fill: false,
         borderColor: "#4CAF50",
+        tension: 0.4,
+        pointRadius: 0,
       },
     ],
   };
@@ -38,10 +47,11 @@ export default function PriceChart() {
     responsive: true,
     scales: {
       x: {
-        type: "category",
+        type: "category" as const,
       },
       y: {
-        type: "linear",
+        type: "linear" as const,
+        beginAtZero: true,
       },
     },
     plugins: {
