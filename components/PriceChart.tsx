@@ -36,11 +36,6 @@ const crosshairLinePlugin: Plugin<'line'> = {
     if (tooltip && tooltip.getActiveElements().length > 0) {
       const x = tooltip.getActiveElements()[0].element.x;
 
-      
-      if (navigator.vibrate) {
-        navigator.vibrate(50); 
-      }
-
       WebApp.HapticFeedback.impactOccurred('light');
 
       ctx.save();
