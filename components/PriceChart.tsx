@@ -13,8 +13,8 @@ import {
   ChartOptions,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { useRef } from 'react';
-import WebApp from '@twa-dev/sdk'
+import { useRef, useState } from 'react';
+import WebApp from '@twa-dev/sdk';
 
 ChartJS.register(
   CategoryScale,
@@ -26,18 +26,23 @@ ChartJS.register(
   Legend
 );
 
+const lastIndexMap = new Map(); // Store lastIndex per chart instance
 
 const crosshairLinePlugin: Plugin<'line'> = {
   id: 'crosshairLine',
   beforeDraw: (chart) => {
     const ctx = chart.ctx;
     const tooltip = chart.tooltip;
+    const chartId = chart.id; // Use chart id as key for Map
 
     if (tooltip && tooltip.getActiveElements().length > 0) {
       const x = tooltip.getActiveElements()[0].element.x;
+      const index = tooltip.getActiveElements()[0].index;
+      const lastIndex = lastIndexMap.get(chartId);
 
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && index !== lastIndex) {
         WebApp.HapticFeedback.impactOccurred('soft');
+        lastIndexMap.set(chartId, index); // Update the lastIndex in Map
       }
 
       ctx.save();
@@ -57,6 +62,14 @@ const crosshairLinePlugin: Plugin<'line'> = {
       gradient.addColorStop(1, '#FF408130');
 
       chart.data.datasets[0].borderColor = gradient;
+
+      // Gradient background
+      const backgroundGradient = ctx.createLinearGradient(0, 0, 0, chart.height);
+      backgroundGradient.addColorStop(0, 'rgba(255, 64, 129, 0.2)');
+      backgroundGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      
+      ctx.fillStyle = backgroundGradient;
+      ctx.fillRect(chart.chartArea.left, chart.chartArea.top, chart.chartArea.right - chart.chartArea.left, chart.chartArea.bottom - chart.chartArea.top);
     }
   }
 };
@@ -65,6 +78,7 @@ ChartJS.register(crosshairLinePlugin);
 
 export default function PriceChart() {
   const chartRef = useRef(null);
+  const [hovered, setHovered] = useState(false);
 
   const data = {
     labels: [
@@ -84,7 +98,8 @@ export default function PriceChart() {
           1.98, 1.99, 2.00, 1.99, 2.01, 2.02, 2.01, 2.03, 2.04, 2.02,
           2.03
         ],
-        fill: false,
+        fill: true,
+        backgroundColor: hovered ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.6)',
         borderColor: "#4CAF50",
         tension: 0.4,
         pointRadius: 0,
@@ -112,7 +127,7 @@ export default function PriceChart() {
         intersect: false,
         callbacks: {
           label: function (tooltipItem) {
-            const value = tooltipItem.raw as number; 
+            const value = tooltipItem.raw as number;
             return `$${value.toFixed(2)}`;
           },
         },
@@ -128,6 +143,7 @@ export default function PriceChart() {
       if (target) {
         target.style.cursor = chartElement[0] ? 'pointer' : 'default';
       }
+      setHovered(chartElement.length > 0);
     },
   };
 
@@ -137,4 +153,3 @@ export default function PriceChart() {
     </div>
   );
 }
-
