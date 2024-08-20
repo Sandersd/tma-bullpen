@@ -90,8 +90,12 @@ const crosshairLinePlugin: Plugin<'line'> = {
 
 ChartJS.register(crosshairLinePlugin);
 
-export default function PriceChart() {
-  const chartRef = useRef(null);
+interface PriceChartProps {
+  onPriceHover: (price: number) => void;
+}
+
+export default function PriceChart({ onPriceHover }: PriceChartProps) {
+  const chartRef = useRef<ChartJS<"line">>(null);
   const [hovered, setHovered] = useState(false);
 
   const data = {
@@ -156,6 +160,12 @@ export default function PriceChart() {
         target.style.cursor = chartElement[0] ? 'pointer' : 'default';
       }
       setHovered(chartElement.length > 0);
+
+      if (chartElement.length > 0 && chartRef.current) {
+        const dataIndex = chartElement[0].index;
+        const price = chartRef.current.data.datasets[0].data[dataIndex] as number;
+        onPriceHover(price);
+      }
     },
   };
 
