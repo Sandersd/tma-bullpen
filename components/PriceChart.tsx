@@ -26,14 +26,14 @@ ChartJS.register(
   Legend
 );
 
-const lastIndexMap = new Map(); // Store lastIndex per chart instance
+const lastIndexMap = new Map();
 
 const crosshairLinePlugin: Plugin<'line'> = {
   id: 'crosshairLine',
   beforeDraw: (chart) => {
     const ctx = chart.ctx;
     const tooltip = chart.tooltip;
-    const chartId = chart.id; // Use chart id as key for Map
+    const chartId = chart.id;
 
     if (tooltip && tooltip.getActiveElements().length > 0) {
       const x = tooltip.getActiveElements()[0].element.x;
@@ -42,7 +42,7 @@ const crosshairLinePlugin: Plugin<'line'> = {
 
       if (typeof window !== 'undefined' && index !== lastIndex) {
         WebApp.HapticFeedback.impactOccurred('soft');
-        lastIndexMap.set(chartId, index); // Update the lastIndex in Map
+        lastIndexMap.set(chartId, index);
       }
 
       ctx.save();
@@ -56,20 +56,34 @@ const crosshairLinePlugin: Plugin<'line'> = {
       ctx.restore();
 
       const gradient = ctx.createLinearGradient(0, 0, chart.width, 0);
-      gradient.addColorStop(0, '#FF4081');
-      gradient.addColorStop(x / chart.width, '#FF4081');
-      gradient.addColorStop(x / chart.width, '#FF408130');
-      gradient.addColorStop(1, '#FF408130');
+      gradient.addColorStop(0, 'rgba(255, 64, 129, 0.8)');
+      gradient.addColorStop(x / chart.width - 0.001, 'rgba(255, 64, 129, 0.8)');
+      gradient.addColorStop(x / chart.width + 0.001, 'rgba(255, 64, 129, 0.3)');
+      gradient.addColorStop(1, 'rgba(255, 64, 129, 0.3)');
 
       chart.data.datasets[0].borderColor = gradient;
+      chart.update('none');
 
-      // Gradient background
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(chart.chartArea.left, chart.chartArea.bottom);
+
+      const meta = chart.getDatasetMeta(0);
+      for (let i = 0; i <= index; i++) {
+        const point = meta.data[i] as any;
+        ctx.lineTo(point.x, point.y);
+      }
+
+      ctx.lineTo(x, chart.chartArea.bottom);
+      ctx.closePath();
+
       const backgroundGradient = ctx.createLinearGradient(0, 0, 0, chart.height);
-      backgroundGradient.addColorStop(0, 'rgba(255, 64, 129, 0.2)');
+      backgroundGradient.addColorStop(0, 'rgba(255, 64, 129, 0.6)');
       backgroundGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      
+
       ctx.fillStyle = backgroundGradient;
-      ctx.fillRect(chart.chartArea.left, chart.chartArea.top, chart.chartArea.right - chart.chartArea.left, chart.chartArea.bottom - chart.chartArea.top);
+      ctx.fill();
+      ctx.restore();
     }
   }
 };
@@ -94,13 +108,13 @@ export default function PriceChart() {
           1.70, 1.72, 1.74, 1.73, 1.75, 1.78, 1.76, 1.77, 1.79, 1.78,
           1.80, 1.82, 1.81, 1.80, 1.82, 1.83, 1.84, 1.86, 1.85, 1.88,
           1.87, 1.89, 1.90, 1.88, 1.89, 1.91, 1.90, 1.92, 1.93, 1.91,
-          1.92, 1.94, 1.93, 1.95, 1.94, 1.96, 1.95, 1.96, 1.97, 1.96,
-          1.98, 1.99, 2.00, 1.99, 2.01, 2.02, 2.01, 2.03, 2.04, 2.02,
+          1.80, 1.82, 1.81, 1.80, 1.82, 1.83, 1.84, 1.86, 1.85, 1.88,
+          1.70, 1.72, 1.74, 1.73, 1.75, 1.78, 1.76, 1.77, 1.79, 1.78,
           2.03
         ],
         fill: true,
         backgroundColor: hovered ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.6)',
-        borderColor: "#4CAF50",
+        borderColor: 'rgba(255, 64, 129, 0.8)',
         tension: 0.4,
         pointRadius: 0,
       },
