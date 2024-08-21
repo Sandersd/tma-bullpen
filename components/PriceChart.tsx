@@ -253,12 +253,14 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
     };
 
     document.addEventListener('touchend', handleTouchEnd);
+    document.addEventListener('touchcancel', handleTouchEnd); // Add touchcancel to handle cases where the touch is interrupted
     if (chartRef.current?.canvas) {
       chartRef.current.canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
     }
 
     return () => {
       document.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('touchcancel', handleTouchEnd); // Cleanup touchcancel listener
       if (chartRef.current?.canvas) {
         chartRef.current.canvas.removeEventListener('touchstart', handleTouchStart);
       }
