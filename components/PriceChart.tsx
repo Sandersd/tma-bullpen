@@ -199,6 +199,7 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
           weight: 'normal',
         },
         padding: 4,
+        enabled: false,
         external: function(context) {
           const tooltipEl = document.getElementById('chartjs-tooltip');
           if (!tooltipEl) return;
@@ -206,11 +207,34 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
           const chart = context.chart;
           const { ctx, chartArea } = chart;
 
-          tooltipEl.style.position = 'absolute';
-          tooltipEl.style.left = chart.canvas.offsetLeft + chartArea.left + 'px';
-          tooltipEl.style.top = 0 +'px';
-          // tooltipEl.style.top = chart.canvas.offsetTop + 'px';
-          tooltipEl.style.pointerEvents = 'none';
+          // Show the tooltip when there's active data
+          if (context.tooltip.opacity > 0) {
+            const tooltipModel = context.tooltip;
+            
+            // Position the tooltip
+            const position = chart.canvas.getBoundingClientRect();
+            tooltipEl.style.position = 'absolute';
+            tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX + 'px';
+            tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + 'px';
+            tooltipEl.style.pointerEvents = 'none';
+            tooltipEl.style.opacity = '1';
+            tooltipEl.style.display = 'block';
+            
+            // Update the content of the tooltip
+            if (tooltipModel.body) {
+              const titleLines = tooltipModel.title || [];
+              let innerHtml = '<div>';
+              titleLines.forEach(title => {
+                innerHtml += '<span>' + title + '</span>';
+              });
+              innerHtml += '</div>';
+
+              tooltipEl.innerHTML = innerHtml;
+            }
+          } else {
+            tooltipEl.style.opacity = '0';
+            tooltipEl.style.display = 'none';
+          }
         },
       },
     },
@@ -235,34 +259,60 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
   };
 
   const resetChartState = () => {
+    console.log('Resetting chart state');
     setHovered(false);
     if (chartRef.current) {
+      // Reset the border color
       chartRef.current.data.datasets[0].borderColor = 'rgba(52, 199, 89, 1)';
-      chartRef.current.update('none');
+      // Hide the tooltip
+      if (chartRef.current.tooltip) {
+        chartRef.current.tooltip.setActiveElements([], { x: 0, y: 0 });
+      }
+      
+      // Clear any hover styles
+      chartRef.current.setActiveElements([]);
+      // Update the chart
+      chartRef.current.update();
     }
-    onPriceHover(0);
+    onPriceHover(chartRef.current?.data.datasets[0].data[chartRef.current?.data.datasets[0].data.length - 1] as number ?? 0);
+
+    // Hide the custom tooltip element
+    const tooltipEl = document.getElementById('chartjs-tooltip');
+    if (tooltipEl) {
+      tooltipEl.style.opacity = '0';
+      tooltipEl.style.display = 'none';
+    }
   };
 
   useEffect(() => {
+    const handleTouchStart = (event: TouchEvent) => {
+      console.log('Touch started');
+      event.preventDefault(); // Prevent scrolling
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      event.preventDefault(); // Prevent scrolling
+    };
+
     const handleTouchEnd = () => {
+      console.log('Touch ended');
       resetChartState();
     };
 
-    const handleTouchStart = (event: TouchEvent) => {
-      event.preventDefault();
-    };
-
-    document.addEventListener('touchend', handleTouchEnd);
-    document.addEventListener('touchcancel', handleTouchEnd); // Add touchcancel to handle cases where the touch is interrupted
-    if (chartRef.current?.canvas) {
-      chartRef.current.canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    const chartContainer = chartRef.current?.canvas?.parentElement;
+    if (chartContainer) {
+      chartContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+      chartContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+      chartContainer.addEventListener('touchend', handleTouchEnd);
+      chartContainer.addEventListener('touchcancel', handleTouchEnd);
     }
 
     return () => {
-      document.removeEventListener('touchend', handleTouchEnd);
-      document.removeEventListener('touchcancel', handleTouchEnd); // Cleanup touchcancel listener
-      if (chartRef.current?.canvas) {
-        chartRef.current.canvas.removeEventListener('touchstart', handleTouchStart);
+      if (chartContainer) {
+        chartContainer.removeEventListener('touchstart', handleTouchStart);
+        chartContainer.removeEventListener('touchmove', handleTouchMove);
+        chartContainer.removeEventListener('touchend', handleTouchEnd);
+        chartContainer.removeEventListener('touchcancel', handleTouchEnd);
       }
     };
   }, []);
@@ -274,8 +324,8 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
   }, [hovered]);
 
   return (
-    <div style={{ position: 'relative', height: '200px' }} onMouseLeave={resetChartState}>
-      <div id="chartjs-tooltip" style={{ position: 'absolute', pointerEvents: 'none' }}></div>
+    <div style={{ position: 'relative', height: '200px', touchAction: 'none' }} onMouseLeave={resetChartState}>
+      <div id="chartjs-tooltip" style={{ position: 'absolute', pointerEvents: 'none', display: 'none' }}></div>
       <Line ref={chartRef} data={data} options={options} />
     </div>
   );
