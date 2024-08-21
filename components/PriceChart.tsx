@@ -35,6 +35,28 @@ const crosshairLinePlugin: Plugin<'line'> = {
     const tooltip = chart.tooltip;
     const chartId = chart.id;
 
+    // Apply background gradient at all times
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(chart.chartArea.left, chart.chartArea.bottom);
+
+    const meta = chart.getDatasetMeta(0);
+    for (let i = 0; i < meta.data.length; i++) {
+      const point = meta.data[i] as any;
+      ctx.lineTo(point.x, point.y);
+    }
+
+    ctx.lineTo(chart.chartArea.right, chart.chartArea.bottom);
+    ctx.closePath();
+
+    const backgroundGradient = ctx.createLinearGradient(0, 0, 0, chart.height);
+    backgroundGradient.addColorStop(0, 'rgba(52, 199, 89, 0.3)');
+    backgroundGradient.addColorStop(1, 'rgba(52, 199, 89, 0)');
+
+    ctx.fillStyle = backgroundGradient;
+    ctx.fill();
+    ctx.restore();
+
     if (tooltip && tooltip.getActiveElements().length > 0) {
       const x = tooltip.getActiveElements()[0].element.x;
       const index = tooltip.getActiveElements()[0].index;
@@ -77,7 +99,7 @@ const crosshairLinePlugin: Plugin<'line'> = {
       ctx.closePath();
 
       const backgroundGradient = ctx.createLinearGradient(0, 0, 0, chart.height);
-      backgroundGradient.addColorStop(0, 'rgba(52, 199, 89, 0.1)');
+      backgroundGradient.addColorStop(0, 'rgba(52, 199, 89, 0.3)');
       backgroundGradient.addColorStop(1, 'rgba(52, 199, 89, 0)');
 
       ctx.fillStyle = backgroundGradient;
@@ -103,15 +125,27 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
 
   const data = {
     labels: [
-      "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30",
-      "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00"
+      "09:30", "09:35", "09:40", "09:45", "09:50", "09:55", "10:00", "10:05", "10:10", "10:15",
+      "10:20", "10:25", "10:30", "10:35", "10:40", "10:45", "10:50", "10:55", "11:00", "11:05",
+      "11:10", "11:15", "11:20", "11:25", "11:30", "11:35", "11:40", "11:45", "11:50", "11:55",
+      "12:00", "12:05", "12:10", "12:15", "12:20", "12:25", "12:30", "12:35", "12:40", "12:45",
+      "12:50", "12:55", "13:00", "13:05", "13:10", "13:15", "13:20", "13:25", "13:30", "13:35",
+      "13:40", "13:45", "13:50", "13:55", "14:00", "14:05", "14:10", "14:15", "14:20", "14:25",
+      "14:30", "14:35", "14:40", "14:45", "14:50", "14:55", "15:00", "15:05", "15:10", "15:15",
+      "15:20", "15:25", "15:30", "15:35", "15:40", "15:45", "15:50", "15:55", "16:00"
     ],
     datasets: [
       {
         label: "Price",
         data: [
-          1.42, 1.39, 1.45, 1.48, 1.52, 1.55, 1.59, 1.57, 1.54, 1.51,
-          1.53, 1.55, 1.56, 1.56
+          1.42, 1.41, 1.40, 1.39, 1.38, 1.39, 1.39, 1.40, 1.41, 1.42,
+          1.43, 1.44, 1.45, 1.46, 1.47, 1.48, 1.49, 1.50, 1.48, 1.49,
+          1.50, 1.51, 1.52, 1.53, 1.52, 1.53, 1.54, 1.55, 1.56, 1.57,
+          1.55, 1.56, 1.57, 1.58, 1.59, 1.60, 1.59, 1.58, 1.57, 1.56,
+          1.55, 1.54, 1.57, 1.56, 1.55, 1.54, 1.53, 1.52, 1.54, 1.53,
+          1.52, 1.51, 1.50, 1.49, 1.51, 1.52, 1.53, 1.54, 1.55, 1.56,
+          1.53, 1.54, 1.55, 1.56, 1.57, 1.58, 1.55, 1.56, 1.57, 1.58,
+          1.59, 1.60, 1.56, 1.57, 1.58, 1.59, 1.60, 1.61, 1.56
         ],
         fill: true,
         backgroundColor: (context: { chart: any; }) => {
@@ -122,11 +156,11 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
           }
           const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
           gradient.addColorStop(0, 'rgba(52, 199, 89, 0)');
-          gradient.addColorStop(1, 'rgba(52, 199, 89, 0.1)');
+          gradient.addColorStop(1, 'rgba(52, 199, 89, 0.3)');
           return gradient;
         },
         borderColor: 'rgba(52, 199, 89, 1)',
-        tension: 0.4,
+        tension: 0.6,
         pointRadius: 0,
       },
     ],
@@ -149,11 +183,34 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
       tooltip: {
         mode: 'index',
         intersect: false,
+        position: 'average',
+        yAlign: 'bottom',
+        xAlign: 'center',
         callbacks: {
-          label: function (tooltipItem) {
-            const value = tooltipItem.raw as number;
-            return `$${value.toFixed(2)}`;
+          title: (tooltipItems) => {
+            return tooltipItems[0].label;
           },
+          label: () => '',
+        },
+        displayColors: false,
+        backgroundColor: 'rgba(255, 255, 255, 0)',
+        titleColor: '#000',
+        titleFont: {
+          weight: 'normal',
+        },
+        padding: 4,
+        external: function(context) {
+          const tooltipEl = document.getElementById('chartjs-tooltip');
+          if (!tooltipEl) return;
+
+          const chart = context.chart;
+          const { ctx, chartArea } = chart;
+
+          tooltipEl.style.position = 'absolute';
+          tooltipEl.style.left = chart.canvas.offsetLeft + chartArea.left + 'px';
+          tooltipEl.style.top = 0 +'px';
+          // tooltipEl.style.top = chart.canvas.offsetTop + 'px';
+          tooltipEl.style.pointerEvents = 'none';
         },
       },
     },
@@ -185,6 +242,7 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
 
   return (
     <div style={{ position: 'relative', height: '200px' }}>
+      <div id="chartjs-tooltip" style={{ position: 'absolute', pointerEvents: 'none' }}></div>
       <Line ref={chartRef} data={data} options={options} />
     </div>
   );
