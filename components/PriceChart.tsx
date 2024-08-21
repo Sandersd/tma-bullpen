@@ -50,7 +50,7 @@ const crosshairLinePlugin: Plugin<'line'> = {
     ctx.closePath();
 
     const backgroundGradient = ctx.createLinearGradient(0, 0, 0, chart.height);
-    backgroundGradient.addColorStop(0, 'rgba(52, 199, 89, 0.3)');
+    backgroundGradient.addColorStop(0, 'rgba(52, 199, 89, 0.2)');
     backgroundGradient.addColorStop(1, 'rgba(52, 199, 89, 0)');
 
     ctx.fillStyle = backgroundGradient;
@@ -99,7 +99,7 @@ const crosshairLinePlugin: Plugin<'line'> = {
       ctx.closePath();
 
       const backgroundGradient = ctx.createLinearGradient(0, 0, 0, chart.height);
-      backgroundGradient.addColorStop(0, 'rgba(52, 199, 89, 0.3)');
+      backgroundGradient.addColorStop(0, 'rgba(52, 199, 89, 0.2)');
       backgroundGradient.addColorStop(1, 'rgba(52, 199, 89, 0)');
 
       ctx.fillStyle = backgroundGradient;
@@ -156,11 +156,11 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
           }
           const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
           gradient.addColorStop(0, 'rgba(52, 199, 89, 0)');
-          gradient.addColorStop(1, 'rgba(52, 199, 89, 0.3)');
+          gradient.addColorStop(1, 'rgba(52, 199, 89, 0.2)');
           return gradient;
         },
         borderColor: 'rgba(52, 199, 89, 1)',
-        tension: 0.6,
+        tension: 0.2,
         pointRadius: 0,
       },
     ],
@@ -233,6 +233,27 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
       }
     },
   };
+
+  const resetChartState = () => {
+    setHovered(false);
+    if (chartRef.current) {
+      chartRef.current.data.datasets[0].borderColor = 'rgba(52, 199, 89, 1)';
+      chartRef.current.update('none');
+    }
+    onPriceHover(0); // Reset the hovered price
+  };
+
+  useEffect(() => {
+    const handleTouchEnd = () => {
+      resetChartState();
+    };
+
+    document.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
 
   useEffect(() => {
     if (chartRef.current) {
