@@ -204,30 +204,27 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
           const tooltipEl = document.getElementById('chartjs-tooltip');
           if (!tooltipEl) return;
 
-          const chart = context.chart;
-          const { ctx, chartArea } = chart;
-
-          // Show the tooltip when there's active data
           if (context.tooltip.opacity > 0) {
             const tooltipModel = context.tooltip;
             
             // Position the tooltip
-            const position = chart.canvas.getBoundingClientRect();
+            const position = context.chart.canvas.getBoundingClientRect();
             tooltipEl.style.position = 'absolute';
             tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX + 'px';
-            tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + 'px';
+            tooltipEl.style.top = position.top + window.pageYOffset + 'px';
             tooltipEl.style.pointerEvents = 'none';
             tooltipEl.style.opacity = '1';
             tooltipEl.style.display = 'block';
             
-            // Update the content of the tooltip
             if (tooltipModel.body) {
-              const titleLines = tooltipModel.title || [];
-              let innerHtml = '<div>';
-              titleLines.forEach(title => {
-                innerHtml += '<span>' + title + '</span>';
-              });
-              innerHtml += '</div>';
+              const dataPoint = tooltipModel.dataPoints[0];
+              const time = dataPoint.label;
+              
+              let innerHtml = `
+                <div style="font-size: 12px; color: #666; text-align: center;">
+                  ${time}
+                </div>
+              `;
 
               tooltipEl.innerHTML = innerHtml;
             }
