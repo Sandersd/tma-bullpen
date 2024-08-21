@@ -240,7 +240,7 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
       chartRef.current.data.datasets[0].borderColor = 'rgba(52, 199, 89, 1)';
       chartRef.current.update('none');
     }
-    onPriceHover(0); // Reset the hovered price
+    onPriceHover(0);
   };
 
   useEffect(() => {
@@ -248,10 +248,20 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
       resetChartState();
     };
 
+    const handleTouchStart = (event: TouchEvent) => {
+      event.preventDefault();
+    };
+
     document.addEventListener('touchend', handleTouchEnd);
+    if (chartRef.current?.canvas) {
+      chartRef.current.canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    }
 
     return () => {
       document.removeEventListener('touchend', handleTouchEnd);
+      if (chartRef.current?.canvas) {
+        chartRef.current.canvas.removeEventListener('touchstart', handleTouchStart);
+      }
     };
   }, []);
 
@@ -262,7 +272,7 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
   }, [hovered]);
 
   return (
-    <div style={{ position: 'relative', height: '200px' }}>
+    <div style={{ position: 'relative', height: '200px' }} onMouseLeave={resetChartState}>
       <div id="chartjs-tooltip" style={{ position: 'absolute', pointerEvents: 'none' }}></div>
       <Line ref={chartRef} data={data} options={options} />
     </div>
