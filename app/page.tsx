@@ -1,33 +1,22 @@
 "use client";
 
-import Header from "../components/Header";
-import PriceChart from "../components/PriceChart";
-import BalanceInfo from "../components/BalanceInfo";
-import BottomNav from "../components/BottomNav";
-import { useEffect, useState } from "react";
-import WebApp from '@twa-dev/sdk'
+import { useState } from 'react';
+import Header from '@/components/Header';
+import PriceChart from '@/components/PriceChart';
+import BalanceInfo from '@/components/BalanceInfo';
 
 export default function Home() {
-  const [currentPrice, setCurrentPrice] = useState<number>(1.74);
+  const [currentPrice, setCurrentPrice] = useState(1.56);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      WebApp.ready();
-    }
-  }, []);
-
-  const closeApp = () => {
-    if (typeof window !== 'undefined') {
-      WebApp.close();
-    }
+  const handlePriceHover = (price: number) => {
+    setCurrentPrice(price);
   };
 
   return (
-    <div className="min-h-screen bg-dark text-white">
+    <main className="flex min-h-screen flex-col bg-white">
       <Header currentPrice={currentPrice} />
-      <PriceChart onPriceHover={setCurrentPrice} />
+      <PriceChart onPriceHover={handlePriceHover} />
       <BalanceInfo />
-      <BottomNav />
-    </div>
+    </main>
   );
 }

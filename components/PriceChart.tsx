@@ -13,7 +13,7 @@ import {
   ChartOptions,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
 
 ChartJS.register(
@@ -50,16 +50,15 @@ const crosshairLinePlugin: Plugin<'line'> = {
       ctx.moveTo(x, chart.chartArea.top);
       ctx.lineTo(x, chart.chartArea.bottom);
       ctx.lineWidth = 1;
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
       ctx.stroke();
       ctx.restore();
 
       const gradient = ctx.createLinearGradient(0, 0, chart.width, 0);
-      gradient.addColorStop(0, 'rgba(255, 64, 129, 0.8)');
-      gradient.addColorStop(x / chart.width - 0.001, 'rgba(255, 64, 129, 0.8)');
-      gradient.addColorStop(x / chart.width + 0.001, 'rgba(255, 64, 129, 0.3)');
-      gradient.addColorStop(1, 'rgba(255, 64, 129, 0.3)');
+      gradient.addColorStop(0, 'rgba(52, 199, 89, 1)');
+      gradient.addColorStop(x / chart.width, 'rgba(52, 199, 89, 1)');
+      gradient.addColorStop(x / chart.width, 'rgba(52, 199, 89, 0.5)');
+      gradient.addColorStop(1, 'rgba(52, 199, 89, 0.5)');
 
       chart.data.datasets[0].borderColor = gradient;
       chart.update('none');
@@ -78,12 +77,16 @@ const crosshairLinePlugin: Plugin<'line'> = {
       ctx.closePath();
 
       const backgroundGradient = ctx.createLinearGradient(0, 0, 0, chart.height);
-      backgroundGradient.addColorStop(0, 'rgba(255, 64, 129, 0.6)');
-      backgroundGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      backgroundGradient.addColorStop(0, 'rgba(52, 199, 89, 0.1)');
+      backgroundGradient.addColorStop(1, 'rgba(52, 199, 89, 0)');
 
       ctx.fillStyle = backgroundGradient;
       ctx.fill();
       ctx.restore();
+    } else {
+      // Reset the line color when not hovering
+      chart.data.datasets[0].borderColor = 'rgba(52, 199, 89, 1)';
+      chart.update('none');
     }
   }
 };
@@ -100,23 +103,29 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
 
   const data = {
     labels: [
-      "12:00", "12:05", "12:10", "12:15", "12:20", "12:25", "12:30",
-      "12:35", "12:40", "12:45", "12:50", "12:55", "13:00", "13:05",
-      "13:10", "13:15", "13:20", "13:25", "13:30", "13:35", "13:40",
-      "13:45", "13:50", "13:55", "14:00"
+      "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30",
+      "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00"
     ],
     datasets: [
       {
         label: "Price",
         data: [
-          2.00, 1.98, 1.97, 1.99, 1.96, 1.95, 1.94, 1.93, 1.92, 1.90,
-          1.91, 1.89, 1.88, 1.87, 1.86, 1.85, 1.84, 1.83, 1.82, 1.81,
-          1.80, 1.79, 1.78, 1.77, 1.76, 1.75, 1.74, 1.73, 1.72, 1.71,
-          1.70
+          1.42, 1.39, 1.45, 1.48, 1.52, 1.55, 1.59, 1.57, 1.54, 1.51,
+          1.53, 1.55, 1.56, 1.56
         ],
         fill: true,
-        backgroundColor: hovered ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.6)',
-        borderColor: 'rgba(255, 64, 129, 0.8)',
+        backgroundColor: (context: { chart: any; }) => {
+          const chart = context.chart;
+          const { ctx, chartArea } = chart;
+          if (!chartArea) {
+            return null;
+          }
+          const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+          gradient.addColorStop(0, 'rgba(52, 199, 89, 0)');
+          gradient.addColorStop(1, 'rgba(52, 199, 89, 0.1)');
+          return gradient;
+        },
+        borderColor: 'rgba(52, 199, 89, 1)',
         tension: 0.4,
         pointRadius: 0,
       },
@@ -127,11 +136,10 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
     responsive: true,
     scales: {
       x: {
-        type: "category",
+        display: false,
       },
       y: {
-        type: "linear",
-        beginAtZero: true,
+        display: false,
       },
     },
     plugins: {
@@ -169,8 +177,14 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
     },
   };
 
+  useEffect(() => {
+    if (chartRef.current) {
+      chartRef.current.update();
+    }
+  }, [hovered]);
+
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', height: '200px' }}>
       <Line ref={chartRef} data={data} options={options} />
     </div>
   );

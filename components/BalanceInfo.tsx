@@ -3,35 +3,17 @@
 export default function BalanceInfo() {
   return (
     <section className="p-4">
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center mb-4">
         <div>
-          <h2 className="text-lg">Your balance</h2>
-          <p className="text-sm">Value: $0.00</p>
-          <p className="text-sm">Quantity: 0</p>
+          <h2 className="text-lg font-semibold">Your balance</h2>
+          <p className="text-sm text-gray-600">Value: $77.79</p>
         </div>
-        <button className="bg-green-500 text-white px-4 py-2 rounded">Buy</button>
+        <button className="bg-green-500 text-white px-6 py-3 rounded-full text-lg font-semibold">Buy</button>
       </div>
-      <div className="mt-4">
-        <h3 className="text-lg">About</h3>
-        <p>Popular meme Dogwifhat vibes wif frens onchain @Dogwifcoin on X</p>
-      </div>
-      <div className="mt-4 mb-[60px] flex justify-between">
-        <div>
-          <p>Market cap</p>
-          <p>$1.7B</p>
-        </div>
-        <div>
-          <p>Volume</p>
-          <p>$74.7M</p>
-        </div>
-        <div>
-          <p>All time high</p>
-          <p>$4.78</p>
-        </div>
-        <div>
-          <p>All time low</p>
-          <p>$0.0512</p>
-        </div>
+      <div className="flex justify-between mb-8">
+        <button className="text-gray-600">Home</button>
+        <button className="text-gray-600">Rewards</button>
+        <button className="text-gray-600">Holdings</button>
       </div>
     </section>
   );
