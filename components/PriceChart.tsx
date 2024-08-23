@@ -338,6 +338,7 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
       if (isDragging) {
         resetChartState();
       }
+      resetChartState();
       isPointerDown = false;
       isDragging = false;
     };
@@ -356,6 +357,7 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
       if (isPointerDown) {
         resetChartState();
       }
+      resetChartState();
       isPointerDown = false;
       isDragging = false;
     };
