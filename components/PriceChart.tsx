@@ -296,9 +296,7 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
       // Reset the border color
       chartRef.current.data.datasets[0].borderColor = 'rgba(52, 199, 89, 1)';
       // Hide the tooltip
-      if (chartRef.current.tooltip) {
-        chartRef.current.tooltip.setActiveElements([], { x: 0, y: 0 });
-      }
+      chartRef.current.tooltip?.setActiveElements([], { x: 0, y: 0 });
       
       // Clear any hover styles
       chartRef.current.setActiveElements([]);
@@ -317,41 +315,82 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
 
   useEffect(() => {
     let isDragging = false;
+    let isPointerDown = false;
 
-    const handleTouchStart = (event: TouchEvent) => {
-      console.log('Touch started');
+    const handlePointerDown = (event: PointerEvent) => {
+      console.log('Pointer down');
       event.preventDefault();
+      isPointerDown = true;
       isDragging = false;
     };
 
-    const handleTouchMove = (event: TouchEvent) => {
-      event.preventDefault();
-      isDragging = true;
+    const handlePointerMove = (event: PointerEvent) => {
+      if (isPointerDown) {
+        console.log('Pointer move');
+        event.preventDefault();
+        isDragging = true;
+      }
     };
 
-    const handleTouchEnd = () => {
-      console.log('Touch ended');
+    const handlePointerUp = (event: PointerEvent) => {
+      console.log('Pointer up');
+      event.preventDefault();
       if (isDragging) {
         resetChartState();
       }
-      resetChartState();
+      isPointerDown = false;
       isDragging = false;
+    };
+
+    const handlePointerCancel = (event: PointerEvent) => {
+      console.log('Pointer cancel');
+      event.preventDefault();
+      resetChartState();
+      isPointerDown = false;
+      isDragging = false;
+    };
+
+    const handlePointerLeave = (event: PointerEvent) => {
+      console.log('Pointer leave');
+      event.preventDefault();
+      if (isPointerDown) {
+        resetChartState();
+      }
+      isPointerDown = false;
+      isDragging = false;
+    };
+
+    const handleTouchStart = (event: TouchEvent) => {
+      console.log('Touch start');
+      event.preventDefault();
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      console.log('Touch end');
+      event.preventDefault();
+      resetChartState();
     };
 
     const chartContainer = chartRef.current?.canvas?.parentElement;
     if (chartContainer) {
+      chartContainer.addEventListener('pointerdown', handlePointerDown);
+      chartContainer.addEventListener('pointermove', handlePointerMove);
+      chartContainer.addEventListener('pointerup', handlePointerUp);
+      chartContainer.addEventListener('pointercancel', handlePointerCancel);
+      chartContainer.addEventListener('pointerleave', handlePointerLeave);
       chartContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
-      chartContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
-      chartContainer.addEventListener('touchend', handleTouchEnd);
-      chartContainer.addEventListener('touchcancel', handleTouchEnd);
+      chartContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
     }
 
     return () => {
       if (chartContainer) {
+        chartContainer.removeEventListener('pointerdown', handlePointerDown);
+        chartContainer.removeEventListener('pointermove', handlePointerMove);
+        chartContainer.removeEventListener('pointerup', handlePointerUp);
+        chartContainer.removeEventListener('pointercancel', handlePointerCancel);
+        chartContainer.removeEventListener('pointerleave', handlePointerLeave);
         chartContainer.removeEventListener('touchstart', handleTouchStart);
-        chartContainer.removeEventListener('touchmove', handleTouchMove);
         chartContainer.removeEventListener('touchend', handleTouchEnd);
-        chartContainer.removeEventListener('touchcancel', handleTouchEnd);
       }
     };
   }, []);
