@@ -316,63 +316,65 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
   useEffect(() => {
     let isDragging = false;
     let isPointerDown = false;
-
+  
     const handlePointerDown = (event: PointerEvent) => {
-      console.log('Pointer down');
       event.preventDefault();
       isPointerDown = true;
       isDragging = false;
     };
-
+  
     const handlePointerMove = (event: PointerEvent) => {
       if (isPointerDown) {
-        console.log('Pointer move');
         event.preventDefault();
         isDragging = true;
       }
     };
-
+  
     const handlePointerUp = (event: PointerEvent) => {
-      console.log('Pointer up');
       event.preventDefault();
       if (isDragging) {
         resetChartState();
       }
-      resetChartState();
       isPointerDown = false;
       isDragging = false;
     };
-
+  
     const handlePointerCancel = (event: PointerEvent) => {
-      console.log('Pointer cancel');
       event.preventDefault();
       resetChartState();
       isPointerDown = false;
       isDragging = false;
     };
-
+  
     const handlePointerLeave = (event: PointerEvent) => {
-      console.log('Pointer leave');
       event.preventDefault();
-      if (isPointerDown) {
+      resetChartState();
+      isPointerDown = false;
+      isDragging = false;
+    };
+  
+    const handleTouchStart = (event: TouchEvent) => {
+      event.preventDefault();
+      isPointerDown = true;
+      isDragging = false;
+    };
+  
+    const handleTouchEnd = (event: TouchEvent) => {
+      event.preventDefault();
+      if (isDragging) {
         resetChartState();
       }
+      isPointerDown = false;
+      isDragging = false;
+    };
+  
+    const handleTouchCancel = (event: TouchEvent) => {
+      event.preventDefault();
       resetChartState();
       isPointerDown = false;
       isDragging = false;
     };
-
-    const handleTouchStart = (event: TouchEvent) => {
-      console.log('Touch start');
-      event.preventDefault();
-    };
-
-    const handleTouchEnd = (event: TouchEvent) => {
-      console.log('Touch end');
-      event.preventDefault();
-      resetChartState();
-    };
-
+  
     const chartContainer = chartRef.current?.canvas?.parentElement;
     if (chartContainer) {
       chartContainer.addEventListener('pointerdown', handlePointerDown);
@@ -382,8 +384,9 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
       chartContainer.addEventListener('pointerleave', handlePointerLeave);
       chartContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
       chartContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
+      chartContainer.addEventListener('touchcancel', handleTouchCancel, { passive: false });
     }
-
+  
     return () => {
       if (chartContainer) {
         chartContainer.removeEventListener('pointerdown', handlePointerDown);
@@ -393,9 +396,10 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
         chartContainer.removeEventListener('pointerleave', handlePointerLeave);
         chartContainer.removeEventListener('touchstart', handleTouchStart);
         chartContainer.removeEventListener('touchend', handleTouchEnd);
+        chartContainer.removeEventListener('touchcancel', handleTouchCancel);
       }
     };
-  }, []);
+  }, []);  
 
   useEffect(() => {
     if (chartRef.current) {
