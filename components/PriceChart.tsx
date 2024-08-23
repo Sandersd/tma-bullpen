@@ -15,6 +15,7 @@ import {
 import { Line } from 'react-chartjs-2';
 import { useRef, useState, useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
+import RangeSelector from './RangeSelector';
 
 ChartJS.register(
   CategoryScale,
@@ -122,48 +123,81 @@ interface PriceChartProps {
 export default function PriceChart({ onPriceHover }: PriceChartProps) {
   const chartRef = useRef<ChartJS<"line">>(null);
   const [hovered, setHovered] = useState(false);
+  const [selectedRange, setSelectedRange] = useState<'1D' | '1W' | '1M'>('1D');
 
-  const data = {
-    labels: [
-      "09:30", "09:35", "09:40", "09:45", "09:50", "09:55", "10:00", "10:05", "10:10", "10:15",
-      "10:20", "10:25", "10:30", "10:35", "10:40", "10:45", "10:50", "10:55", "11:00", "11:05",
-      "11:10", "11:15", "11:20", "11:25", "11:30", "11:35", "11:40", "11:45", "11:50", "11:55",
-      "12:00", "12:05", "12:10", "12:15", "12:20", "12:25", "12:30", "12:35", "12:40", "12:45",
-      "12:50", "12:55", "13:00", "13:05", "13:10", "13:15", "13:20", "13:25", "13:30", "13:35",
-      "13:40", "13:45", "13:50", "13:55", "14:00", "14:05", "14:10", "14:15", "14:20", "14:25",
-      "14:30", "14:35", "14:40", "14:45", "14:50", "14:55", "15:00", "15:05", "15:10", "15:15",
-      "15:20", "15:25", "15:30", "15:35", "15:40", "15:45", "15:50", "15:55", "16:00"
-    ],
-    datasets: [
-      {
-        label: "Price",
-        data: [
-          1.42, 1.41, 1.40, 1.39, 1.38, 1.39, 1.39, 1.40, 1.41, 1.42,
-          1.43, 1.44, 1.45, 1.46, 1.47, 1.48, 1.49, 1.50, 1.48, 1.49,
-          1.50, 1.51, 1.52, 1.53, 1.52, 1.53, 1.54, 1.55, 1.56, 1.57,
-          1.55, 1.56, 1.57, 1.58, 1.59, 1.60, 1.59, 1.58, 1.57, 1.56,
-          1.55, 1.54, 1.57, 1.56, 1.55, 1.54, 1.53, 1.52, 1.54, 1.53,
-          1.52, 1.51, 1.50, 1.49, 1.51, 1.52, 1.53, 1.54, 1.55, 1.56,
-          1.53, 1.54, 1.55, 1.56, 1.57, 1.58, 1.55, 1.56, 1.57, 1.58,
-          1.59, 1.60, 1.56, 1.57, 1.58, 1.59, 1.60, 1.61, 1.56
-        ],
-        fill: true,
-        backgroundColor: (context: { chart: any; }) => {
-          const chart = context.chart;
-          const { ctx, chartArea } = chart;
-          if (!chartArea) {
-            return null;
+  const generateData = (range: '1D' | '1W' | '1M') => {
+    const labels: string[] = [];
+    const prices: number[] = [];
+
+    switch (range) {
+      case '1D':
+        for (let hour = 9; hour <= 16; hour++) {
+          for (let minute = 0; minute < 60; minute += 15) {
+            labels.push(`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`);
+            prices.push(Number((Math.random() * (1.7 - 1.4) + 1.4).toFixed(2)));
           }
-          const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-          gradient.addColorStop(0, 'rgba(52, 199, 89, 0)');
-          gradient.addColorStop(1, 'rgba(52, 199, 89, 0.2)');
-          return gradient;
+        }
+        break;
+      case '1W':
+        for (let day = 0; day < 7; day++) {
+          for (let hour = 9; hour <= 16; hour++) {
+            labels.push(`Day ${day + 1} ${hour}:00`);
+            prices.push(Number((Math.random() * (1.7 - 1.4) + 1.4).toFixed(2)));
+          }
+        }
+        break;
+      case '1M':
+        for (let day = 1; day <= 30; day++) {
+          labels.push(`Day ${day}`);
+          prices.push(Number((Math.random() * (1.7 - 1.4) + 1.4).toFixed(2)));
+        }
+        break;
+    }
+
+    return { labels, prices };
+  };
+
+  const [data, setData] = useState(() => {
+    const { labels, prices } = generateData('1D');
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Price",
+          data: prices,
+          fill: true,
+          backgroundColor: (context: { chart: any; }) => {
+            const chart = context.chart;
+            const { ctx, chartArea } = chart;
+            if (!chartArea) {
+              return null;
+            }
+            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+            gradient.addColorStop(0, 'rgba(52, 199, 89, 0)');
+            gradient.addColorStop(1, 'rgba(52, 199, 89, 0.2)');
+            return gradient;
+          },
+          borderColor: 'rgba(52, 199, 89, 1)',
+          tension: 0.2,
+          pointRadius: 0,
         },
-        borderColor: 'rgba(52, 199, 89, 1)',
-        tension: 0.2,
-        pointRadius: 0,
-      },
-    ],
+      ],
+    };
+  });
+
+  const handleRangeChange = (range: '1D' | '1W' | '1M') => {
+    setSelectedRange(range);
+    const { labels, prices } = generateData(range);
+    setData(prevData => ({
+      ...prevData,
+      labels,
+      datasets: [
+        {
+          ...prevData.datasets[0],
+          data: prices,
+        },
+      ],
+    }));
   };
 
   const options: ChartOptions<'line'> = {
@@ -321,9 +355,12 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
   }, [hovered]);
 
   return (
-    <div style={{ position: 'relative', height: '200px', touchAction: 'none' }} onMouseLeave={resetChartState}>
-      <div id="chartjs-tooltip" style={{ position: 'absolute', pointerEvents: 'none', display: 'none' }}></div>
-      <Line ref={chartRef} data={data} options={options} />
-    </div>
+    <>
+      <div style={{ position: 'relative', height: '200px', touchAction: 'none' }} onMouseLeave={resetChartState}>
+        <div id="chartjs-tooltip" style={{ position: 'absolute', pointerEvents: 'none', display: 'none' }}></div>
+        <Line ref={chartRef} data={data} options={options} />
+      </div>
+      <RangeSelector selectedRange={selectedRange} onRangeChange={handleRangeChange} />
+    </>
   );
 }

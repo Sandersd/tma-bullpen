@@ -2,7 +2,7 @@
 
 export default function BalanceInfo() {
   return (
-    <section className="p-4">
+    <section className="p-4 mt-8">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h2 className="text-lg font-semibold">Your balance</h2>
