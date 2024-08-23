@@ -316,18 +316,26 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
   };
 
   useEffect(() => {
+    let isDragging = false;
+
     const handleTouchStart = (event: TouchEvent) => {
       console.log('Touch started');
-      event.preventDefault(); // Prevent scrolling
+      event.preventDefault();
+      isDragging = false;
     };
 
     const handleTouchMove = (event: TouchEvent) => {
-      event.preventDefault(); // Prevent scrolling
+      event.preventDefault();
+      isDragging = true;
     };
 
     const handleTouchEnd = () => {
       console.log('Touch ended');
+      if (isDragging) {
+        resetChartState();
+      }
       resetChartState();
+      isDragging = false;
     };
 
     const chartContainer = chartRef.current?.canvas?.parentElement;
