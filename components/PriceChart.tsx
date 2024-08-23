@@ -333,7 +333,7 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
     const handlePointerUp = (event: PointerEvent) => {
       event.preventDefault();
       if (isDragging) {
-        resetChartState();
+        requestAnimationFrame(resetChartState);
       }
       isPointerDown = false;
       isDragging = false;
@@ -341,14 +341,14 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
   
     const handlePointerCancel = (event: PointerEvent) => {
       event.preventDefault();
-      resetChartState();
+      requestAnimationFrame(resetChartState);
       isPointerDown = false;
       isDragging = false;
     };
   
     const handlePointerLeave = (event: PointerEvent) => {
       event.preventDefault();
-      resetChartState();
+      requestAnimationFrame(resetChartState);
       isPointerDown = false;
       isDragging = false;
     };
@@ -362,7 +362,7 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
     const handleTouchEnd = (event: TouchEvent) => {
       event.preventDefault();
       if (isDragging) {
-        resetChartState();
+        requestAnimationFrame(resetChartState);
       }
       isPointerDown = false;
       isDragging = false;
@@ -370,7 +370,7 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
   
     const handleTouchCancel = (event: TouchEvent) => {
       event.preventDefault();
-      resetChartState();
+      requestAnimationFrame(resetChartState);
       isPointerDown = false;
       isDragging = false;
     };
@@ -399,7 +399,8 @@ export default function PriceChart({ onPriceHover }: PriceChartProps) {
         chartContainer.removeEventListener('touchcancel', handleTouchCancel);
       }
     };
-  }, []);  
+  }, []);
+  
 
   useEffect(() => {
     if (chartRef.current) {
